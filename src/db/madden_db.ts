@@ -1129,6 +1129,10 @@ function withMetrics<T extends object>(db: T): T {
   })
 }
 
-import mongoImpl from "./madden_db_mongo"
-const dbToUse = process.env.MONGO_CONNECTION_URI ? mongoImpl : withMetrics(MaddenDB)
+// Load the Mongo implementation only when it is configured. A static import
+// executes mongo_db.ts during startup and made Firestore-only deployments
+// crash even though MongoDB was never selected.
+const dbToUse = process.env.MONGO_CONNECTION_URI
+  ? (require("./madden_db_mongo").default as typeof MaddenDB)
+  : withMetrics(MaddenDB)
 export default dbToUse
