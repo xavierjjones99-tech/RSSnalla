@@ -1,13 +1,15 @@
-if (!process.env.DEPLOYMENT_URL) {
+const configuredDeploymentUrl = process.env.DEPLOYMENT_URL || process.env.RAILWAY_PUBLIC_DOMAIN
+
+if (!configuredDeploymentUrl) {
   throw new Error(`Missing Deployment URL for bot, for local this would be localhost:PORT`)
 }
 let deployment = ""
-if (process.env.DEPLOYMENT_URL.startsWith("localhost")) {
-  deployment = "http://" + process.env.DEPLOYMENT_URL
-} else if (!process.env.DEPLOYMENT_URL.startsWith("http")) {
-  deployment = "https://" + process.env.DEPLOYMENT_URL
+if (configuredDeploymentUrl.startsWith("localhost")) {
+  deployment = "http://" + configuredDeploymentUrl
+} else if (!configuredDeploymentUrl.startsWith("http")) {
+  deployment = "https://" + configuredDeploymentUrl
 } else {
-  deployment = process.env.DEPLOYMENT_URL
+  deployment = configuredDeploymentUrl
 }
 export const DEPLOYMENT_URL = deployment
 
