@@ -1,6 +1,7 @@
 import { createProdClient } from "./discord_utils"
 import createNotifier from "./notifier"
 import LeagueSettingsDB, { DiscordIdType } from "./settings_db"
+import { runWithLeague } from "./league_context"
 
 const prodClient = createProdClient()
 
@@ -10,7 +11,10 @@ function getRandomInt(max: number) {
 
 async function updateEachLeagueNotifier() {
   const allLeagueSettings = await LeagueSettingsDB.getAllLeagueSettings()
-  for (const leagueSettings of allLeagueSettings) {
+  for (const rawSettings of allLeagueSettings) {
+    const leagueIds = await LeagueSettingsDB.getMaddenLeagueIds(rawSettings.guildId)
+    for (const leagueId of leagueIds) await runWithLeague(rawSettings.guildId, leagueId, async () => {
+      const leagueSettings = await LeagueSettingsDB.getLeagueSettings(rawSettings.guildId)
     try {
       const notifier = createNotifier(prodClient, leagueSettings.guildId, leagueSettings)
       const weeklyStates = leagueSettings.commands?.game_channel?.weekly_states || {}
@@ -33,6 +37,7 @@ async function updateEachLeagueNotifier() {
     } catch (e) {
       // well do nothing
     }
+    })
   }
 }
 
